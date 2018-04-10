@@ -30,7 +30,7 @@ void FunctionTable::print() {
     // iterating through the function map
     while (it != map.end()){
         //grabbing the function name and type
-        cout << "Function:  "<< it->second->name << " " << it->second->type << " " << "0" << endl;
+        cout << "Function:  "<< it->second->name << " " << it->second->type << " " << it->second->address << endl;
 
         param.printVec(it->second->scope); // printing all the parameters for a given scope
         var.print(it->second->scope);      // printing all the variables for a given scope

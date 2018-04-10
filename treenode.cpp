@@ -15,6 +15,8 @@ using namespace std;
 string countSpace = ""; // space holder
 int numSpace =0;       // space counter
 
+int address = 0;
+
 FunctionTable func;
 Variable var;
 ParameterList param;
@@ -42,20 +44,23 @@ void treenode::buildMapVec(string scope) {
     // looking for a function rule
     if(ruleNum == 60){
       scope = type;                                         // saving off the function name
-      func.build(new SymTab(type, text,  "1",scope, "0"));  // adding the data to the map
+      func.build(new SymTab(type, text,  "1",scope, to_string(address)));  // adding the data to the map
+        address++;
     }
 
     // if parameter array is found, create a vector entry
     if(ruleNum == 91){
 
         //adding [] since the parameter is an array
-        param.add(new SymTab(child[1]->type,child[0]->text+"[]", "1", scope, "0"));
+        param.add(new SymTab(child[1]->type,child[0]->text+"[]", "1", scope, to_string(address)));
+        address++;
 
     }
 
     // if parameter is found, create a vector entry
     if(ruleNum == 90){
-        param.add(new SymTab(child[1]->type,child[0]->text, "1", scope, "0"));
+        param.add(new SymTab(child[1]->type,child[0]->text, "1", scope, to_string(address)));
+        address++;
     }
 
 
@@ -63,13 +68,15 @@ void treenode::buildMapVec(string scope) {
     if(ruleNum == 41){
 
      //adding [] since the variable is an array
-     var.build(new SymTab(child[1]->type,child[0]->text+"[]", child[2]->type, scope, "0")) ;
+     var.build(new SymTab(child[1]->type,child[0]->text+"[]", child[2]->type, scope, to_string(address))) ;
+        address++;
 
     }
 
     // if a variable is found, create a variable map entry
     if(ruleNum == 40){
-        var.build(new SymTab(child[1]->type,child[0]->text,"1", scope, "0")) ;
+        var.build(new SymTab(child[1]->type,child[0]->text,"1", scope, to_string(address))) ;
+        address++;
     }
 
 

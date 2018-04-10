@@ -34,7 +34,7 @@ void Variable::print(string str) {
                 //print out the row with formatting added
                 cout << left << setw(12)<< it->second->name << left << setw(12) << it->second->type
                      << left << setw(12)<< it->second->size << left << setw(12)<< it->second->scope
-                     << left << setw(12) << "0" << endl;
+                     << left << setw(12) << it->second->address << endl;
 
         }
 

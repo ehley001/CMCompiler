@@ -41,7 +41,7 @@ void ParameterList::printVec(string str) {
                 //print out the row with formatting added
                 cout << left << setw(12) << vecMap[countVec]->name << left << setw(12) << vecMap[countVec]->type
                      << left << setw(12) << vecMap[countVec]->size << left << setw(12) << vecMap[countVec]->scope
-                     << left << setw(12) << "0" << endl;
+                     << left << setw(12) << vecMap[countVec]->address << endl;
 
 
             }
