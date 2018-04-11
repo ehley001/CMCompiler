@@ -6,7 +6,7 @@
 #include "treenode.h"
 #include "SymTab.h"
 
-// David Ehley
+// David Ehley, Jesse Karakash, Aaron Diaz
 // Assignment 5
 // 4-10-2018
 extern FILE * yyin;
