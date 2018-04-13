@@ -27,5 +27,6 @@ void cGen::generate(unordered_map<int, SymTab*> local,  unordered_map<int, SymTa
     }
 
     outfile << "HALT 0,0,0" << endl;
+    outfile.close();
 
 }
