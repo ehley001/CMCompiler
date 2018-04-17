@@ -79,6 +79,11 @@ void treenode::buildMapVec(string scope) {
         address++;
     }
 
+    // resetting address once it uses 8 registers
+    if(address == 7){
+
+        address == 0;
+    }
 
     // going thru the tree in a preorder method again, just passing in the scope this time
     for(int count = 0; count < child.size(); count++){
