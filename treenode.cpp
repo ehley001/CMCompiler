@@ -43,9 +43,12 @@ void treenode::buildMapVec(string scope) {
 
     // looking for a function rule
     if(ruleNum == 60){
+
       scope = type;                                         // saving off the function name
       func.build(new SymTab(type, text,  "1",scope, to_string(address)));  // adding the data to the map
-        address++;
+        checkAddress();
+
+
     }
 
     // if parameter array is found, create a vector entry
@@ -53,14 +56,19 @@ void treenode::buildMapVec(string scope) {
 
         //adding [] since the parameter is an array
         param.add(new SymTab(child[1]->type,child[0]->text+"[]", "1", scope, to_string(address)));
-        address++;
+        checkAddress();
+
+
 
     }
 
     // if parameter is found, create a vector entry
     if(ruleNum == 90){
+
         param.add(new SymTab(child[1]->type,child[0]->text, "1", scope, to_string(address)));
-        address++;
+        checkAddress();
+
+
     }
 
 
@@ -69,21 +77,22 @@ void treenode::buildMapVec(string scope) {
 
      //adding [] since the variable is an array
      var.build(new SymTab(child[1]->type,child[0]->text+"[]", child[2]->type, scope, to_string(address))) ;
-        address++;
+        checkAddress();
 
     }
 
     // if a variable is found, create a variable map entry
     if(ruleNum == 40){
+
+
         var.build(new SymTab(child[1]->type,child[0]->text,"1", scope, to_string(address))) ;
-        address++;
+        checkAddress();
+
+
     }
 
     // resetting address once it uses 8 registers
-    if(address == 7){
 
-        address == 0;
-    }
 
     // going thru the tree in a preorder method again, just passing in the scope this time
     for(int count = 0; count < child.size(); count++){
@@ -91,6 +100,14 @@ void treenode::buildMapVec(string scope) {
         child[count]->buildMapVec(scope); // call to print the next root
 
     }
+
+}
+
+void treenode::checkAddress() {
+    if(address == 7){
+        address = -1;
+    }
+    address++;
 
 }
 

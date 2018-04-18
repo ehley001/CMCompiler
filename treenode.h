@@ -25,6 +25,8 @@ public:
 
     void preorder_print();
 
+    void checkAddress();
+
 
     int ruleNum; //int for keeping track of rules
 
