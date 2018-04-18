@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include <algorithm>
 
 #include "treenode.h"
 #include "FunctionTable.h"
@@ -16,6 +17,7 @@ string countSpace = ""; // space holder
 int numSpace =0;       // space counter
 
 int address = 0;
+vector<int> globalVec;
 
 FunctionTable func;
 Variable var;
@@ -75,6 +77,15 @@ void treenode::buildMapVec(string scope) {
     // if a variable array is found, create a variable map entry
     if(ruleNum == 41){
 
+        //if the address is found in the vector of global address's, move to the next one
+        while(find(globalVec.begin(), globalVec.end(), address) != globalVec.end()){
+           address++;
+        }
+
+        if(scope == "global"){           // if global, push the address so it isnt used again
+            globalVec.push_back(address);
+        }
+
      //adding [] since the variable is an array
      var.build(new SymTab(child[1]->type,child[0]->text+"[]", child[2]->type, scope, to_string(address))) ;
         checkAddress();
@@ -84,6 +95,14 @@ void treenode::buildMapVec(string scope) {
     // if a variable is found, create a variable map entry
     if(ruleNum == 40){
 
+
+        while(find(globalVec.begin(), globalVec.end(), address) != globalVec.end()){
+            address++;
+        }
+
+        if(scope == "global"){           // if global, push the address so it isnt used again
+            globalVec.push_back(address);
+        }
 
         var.build(new SymTab(child[1]->type,child[0]->text,"1", scope, to_string(address))) ;
         checkAddress();
