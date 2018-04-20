@@ -46,6 +46,8 @@ void treenode::buildMapVec(string scope) {
     // looking for a function rule
     if(ruleNum == 60){
 
+      searchGlobal();
+
       scope = type;                                         // saving off the function name
       func.build(new SymTab(type, text,  "1",scope, to_string(address)));  // adding the data to the map
         checkAddress();
@@ -55,6 +57,9 @@ void treenode::buildMapVec(string scope) {
 
     // if parameter array is found, create a vector entry
     if(ruleNum == 91){
+
+        searchGlobal();
+
 
         //adding [] since the parameter is an array
         param.add(new SymTab(child[1]->type,child[0]->text+"[]", "1", scope, to_string(address)));
@@ -67,6 +72,8 @@ void treenode::buildMapVec(string scope) {
     // if parameter is found, create a vector entry
     if(ruleNum == 90){
 
+        searchGlobal();
+
         param.add(new SymTab(child[1]->type,child[0]->text, "1", scope, to_string(address)));
         checkAddress();
 
@@ -78,10 +85,7 @@ void treenode::buildMapVec(string scope) {
     if(ruleNum == 41){
 
         //if the address is found in the vector of global address's, move to the next one
-        while(find(globalVec.begin(), globalVec.end(), address) != globalVec.end()){
-           address++;
-        }
-
+       searchGlobal();
         if(scope == "global"){           // if global, push the address so it isnt used again
             globalVec.push_back(address);
         }
@@ -94,11 +98,7 @@ void treenode::buildMapVec(string scope) {
 
     // if a variable is found, create a variable map entry
     if(ruleNum == 40){
-
-
-        while(find(globalVec.begin(), globalVec.end(), address) != globalVec.end()){
-            address++;
-        }
+searchGlobal();
 
         if(scope == "global"){           // if global, push the address so it isnt used again
             globalVec.push_back(address);
@@ -127,6 +127,13 @@ void treenode::checkAddress() {
         address = -1;
     }
     address++;
+
+}
+
+void treenode::searchGlobal() {
+    while(find(globalVec.begin(), globalVec.end(), address) != globalVec.end()){
+        address++;
+    }
 
 }
 
