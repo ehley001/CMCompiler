@@ -153,11 +153,14 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
     }
 
     // handles output -> arglist -> x and output -> arglist -> x, y
+    // NOTE: fix other stuff like * y y
     if(ruleNum == 262 && type == "output"){
-        unordered_map<int, SymTab*>::iterator it = var.map.begin();
+       // cout << child[0]->child.size();
+
 
         for(int i = 0; i < child[0]->child.size(); i++){
 
+            unordered_map<int, SymTab*>::iterator it = var.map.begin();
             while (it != var.map.end()) {
                 if (it->second->name == child[0]->child[i]->type) {
                     outfile << lineCount << ": LD 4," << it->second->address << "(0)\n";
@@ -167,9 +170,23 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
                 }
                 it++;
             }
-
-            //outfile << child[0]->child[i]->type;
         }
+    }
+
+    if(ruleNum == 220 && type == "+"){
+
+    }
+
+    if(ruleNum == 220 && type == "-"){
+
+    }
+
+    if(ruleNum == 240 && type == "*"){
+
+    }
+
+    if(ruleNum == 240 && type == "/"){
+
     }
 
     for(int count = 0; count < child.size(); count++){
