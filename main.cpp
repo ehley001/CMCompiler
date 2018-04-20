@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
     }
 
     yyparse();
-    //root->preorder_print();
+    root->preorder_print();
 
     //function that adds the data to the needed maps/vector
     root->buildMapVec("global"); //passing in global first, since thats the first section

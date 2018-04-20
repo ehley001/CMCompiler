@@ -123,7 +123,7 @@ searchGlobal();
 }
 
 void treenode::checkAddress() {
-    if(address == 7){
+    if(address == 6){
         address = -1;
     }
     address++;
