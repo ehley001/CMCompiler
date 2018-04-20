@@ -50,7 +50,9 @@ int main(int argc, char *argv[]) {
     string fileName = string(argv[1]);
     fileName = fileName.substr(0, fileName.length()-2) + "tm";
 
-    gen.generate(var.map,func.map, param.vecMap, fileName);
+    root->makeFile(fileName);
+
+    //gen.generate(var.map,func.map, param.vecMap, fileName);
 
     return 0;
 }

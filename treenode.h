@@ -14,8 +14,9 @@ class treenode{
 public:
     int value;
 
-    vector<treenode*> child;
+    int lineNumber = 0;
 
+    vector<treenode*> child;
 
    // treenode(int value_arg);  // Constructor
 
@@ -39,6 +40,10 @@ public:
     string text; // other text
 
     void buildMapVec(string scope); // function that goes through the tree and creates table entries
+
+    void makeFile(string file);
+
+    void codeGeneration(ofstream &outfile, int &count);
 
     void printTable(); // calls FunctionTable to print out the table
 

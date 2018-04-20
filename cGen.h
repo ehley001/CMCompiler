@@ -16,10 +16,11 @@ class cGen {
 
 public:
 
+    ofstream outfile;
 
     int count = 0;
 
-    void generate(unordered_map<int, SymTab*> local,  unordered_map<int, SymTab*> function, vector<SymTab*> param, string file);
+    void generate(string action, string file);
 
 };
 

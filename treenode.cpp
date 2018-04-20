@@ -4,11 +4,13 @@
 
 #include <iostream>
 #include <algorithm>
+#include <fstream>
 
 #include "treenode.h"
 #include "FunctionTable.h"
 #include "Variable.h"
 #include "ParameterList.h"
+#include "cGen.h"
 
 
 using namespace std;
@@ -18,6 +20,8 @@ int numSpace =0;       // space counter
 
 int address = 0;
 vector<int> globalVec;
+cGen generator;
+
 
 FunctionTable func;
 Variable var;
@@ -120,6 +124,59 @@ searchGlobal();
 
     }
 
+}
+
+void treenode::makeFile(string file){
+    ofstream outfile(file);
+    int lineCount = 0;
+    codeGeneration(outfile, lineCount);
+}
+
+void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
+
+    // have to assign this to x and y
+    if(ruleNum == 180 && child[1]->type == "input"){
+        outfile << lineCount << ": IN 4,0,0\n";
+        lineCount++;
+
+
+        unordered_map<int, SymTab*>::iterator it = var.map.begin();
+
+        while (it != var.map.end()){
+            if(it->second->name == child[0]->type){
+                outfile << lineCount << ": ST 4," << it->second->address << "(0)\n";
+                lineCount++;
+            }
+            it++;
+        }
+
+    }
+
+    // handles output -> arglist -> x and output -> arglist -> x, y
+    if(ruleNum == 262 && type == "output"){
+        unordered_map<int, SymTab*>::iterator it = var.map.begin();
+
+        for(int i = 0; i < child[0]->child.size(); i++){
+
+            while (it != var.map.end()) {
+                if (it->second->name == child[0]->child[i]->type) {
+                    outfile << lineCount << ": LD 4," << it->second->address << "(0)\n";
+                    lineCount++;
+                    outfile << lineCount << ": OUT 4,0,0\n";
+                    lineCount++;
+                }
+                it++;
+            }
+
+            //outfile << child[0]->child[i]->type;
+        }
+    }
+
+    for(int count = 0; count < child.size(); count++){
+
+        child[count]->codeGeneration(outfile, lineCount);
+
+    }
 }
 
 void treenode::checkAddress() {
