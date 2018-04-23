@@ -136,6 +136,8 @@ void treenode::makeFile(string file){
 
 void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
 
+    stack<int> stacker;  // initiate stack, not sure on what type it has to be yet, so i just put int for now
+
     // have to assign this to x and y
     if(ruleNum == 180 && child[1]->type == "input"){
         outfile << lineCount << ": IN 4,0,0\n";
