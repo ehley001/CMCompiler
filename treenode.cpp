@@ -5,6 +5,7 @@
 #include <iostream>
 #include <algorithm>
 #include <fstream>
+#include <stack>
 
 #include "treenode.h"
 #include "FunctionTable.h"
@@ -102,7 +103,8 @@ void treenode::buildMapVec(string scope) {
 
     // if a variable is found, create a variable map entry
     if(ruleNum == 40){
-searchGlobal();
+
+        searchGlobal();
 
         if(scope == "global"){           // if global, push the address so it isnt used again
             globalVec.push_back(address);
@@ -161,6 +163,7 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
         for(int i = 0; i < child[0]->child.size(); i++){
 
             unordered_map<int, SymTab*>::iterator it = var.map.begin();
+
             while (it != var.map.end()) {
                 if (it->second->name == child[0]->child[i]->type) {
                     outfile << lineCount << ": LD 4," << it->second->address << "(0)\n";
@@ -189,6 +192,7 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
 
     }
 
+    //recursively going through the tree
     for(int count = 0; count < child.size(); count++){
 
         child[count]->codeGeneration(outfile, lineCount);
@@ -196,6 +200,7 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
     }
 }
 
+//resets the address once it gets to the max register
 void treenode::checkAddress() {
     if(address == 6){
         address = -1;
@@ -204,6 +209,7 @@ void treenode::checkAddress() {
 
 }
 
+//looks to see if current address has already been used by a global
 void treenode::searchGlobal() {
     while(find(globalVec.begin(), globalVec.end(), address) != globalVec.end()){
         address++;
