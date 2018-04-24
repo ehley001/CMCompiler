@@ -132,6 +132,7 @@ void treenode::makeFile(string file){
     ofstream outfile(file);
     int lineCount = 0;
     codeGeneration(outfile, lineCount);
+    outfile.close();
 }
 
 void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
