@@ -138,7 +138,6 @@ void treenode::makeFile(string file){
 void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
 
     stack<int> stacker;  // initiate stack, not sure on what type it has to be yet, so i just put int for now
-
     // have to assign this to x and y
     if(ruleNum == 180 && child[1]->type == "input"){
         outfile << lineCount << ": IN 4,0,0\n";
@@ -157,9 +156,16 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
 
     }
 
+    // finds mathops to do stuff
+    if(ruleNum == 180 && (child[0]->type == "+" || child[0]->type == "-" || child[0]->type == "*" || child[0]->type == "/"
+                          || child[1]->type == "+" || child[1]->type == "-" || child[1]->type == "*" || child[1]->type == "/")){
+        mathOps(outfile, lineCount);
+    }
+
+
     // handles output -> arglist -> x and output -> arglist -> x, y
-    // NOTE: fix other stuff like * y y
-    if(ruleNum == 262 && type == "output"){
+    // does not handle mathops
+    if(ruleNum == 262 && type == "output" && child[0]->child[0]->child.size() == 0){
        // cout << child[0]->child.size();
 
 
@@ -179,21 +185,6 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
         }
     }
 
-    if(ruleNum == 220 && type == "+"){
-
-    }
-
-    if(ruleNum == 220 && type == "-"){
-
-    }
-
-    if(ruleNum == 240 && type == "*"){
-
-    }
-
-    if(ruleNum == 240 && type == "/"){
-
-    }
 
     //recursively going through the tree
     for(int count = 0; count < child.size(); count++){
@@ -202,6 +193,51 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
 
     }
 }
+
+//generate code for mathops
+void treenode::mathOps(ofstream &outfile, int &lineCount) {
+
+
+    for(int i = 0; i < child.size(); i++){
+
+
+        // do stuff if +
+        // goes through map to match variables to their addresses, if not found in map then assumes it
+        // is a constant value -- such as x + 4 would assume 4 is the constant instead of a variable
+        // this will be the same code for each operation, with a change in the outfile statements
+        if(child[i]->type == "+"){
+            // address of left side, can do checks if this is empty string, then you know its a constant or another mathop
+            string address = "";
+            // address of right side
+            string address2 = "";
+            unordered_map<int, SymTab*>::iterator it = var.map.begin();
+
+            // finds the address locations of the two children, if they exist, and sets them both to constants we can
+            // use in our outfile.... hopefully
+            // running on simpleExpressionc. , this prints out the address of x (0), as it is the only node we go to other
+            // than "+", which is not found within the table. statements handling the side with no address (constants,
+            // variables, etc.) should be handled after this while loop with recursion. Recursion was taken out due to
+            // error listed below
+            while (it != var.map.end()) {
+                if (it->second->name == child[0]->type) {
+                    string address = it->second->address;
+                    cout << address;
+                }
+                if (it->second->name == child[1]->type) {
+                    string address2 = it->second->address;
+                    cout << address2;
+                }
+                it++;
+            }
+        }
+
+
+        // errors when recursing here, because tries to reach children that do not exist
+        //child[i]->mathOps(outfile, lineCount);
+    }
+
+}
+
 
 //resets the address once it gets to the max register
 void treenode::checkAddress() {

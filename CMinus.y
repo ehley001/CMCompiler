@@ -209,7 +209,7 @@ args : arglist {$$ = $1;}
 arglist : arglist COMMA expression
         {
         $$ = $1; $$->child.push_back($3);}
-        |expression{$$ = new treenode(291, string("arglist"));
+        |expression  {$$ = new treenode(291, string("arglist"));
         $$ -> child.push_back($1);};
 
 /* End of grammar */
