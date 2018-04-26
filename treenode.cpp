@@ -157,8 +157,28 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
     }
 
     // finds mathops to do stuff
-    if(ruleNum == 180 && (child[0]->type == "+" || child[0]->type == "-" || child[0]->type == "*" || child[0]->type == "/"
-                          || child[1]->type == "+" || child[1]->type == "-" || child[1]->type == "*" || child[1]->type == "/")){
+    if(ruleNum == 180 && (//child[0]->type == "+" || child[0]->type == "-" || child[0]->type == "*" || child[0]->type == "/" ||
+                           child[1]->type == "+" || child[1]->type == "-" || child[1]->type == "*" || child[1]->type == "/")){
+        cout << " rulenum180 child[0] type: " << child[0]->type<<endl;
+
+        unordered_map<int, SymTab*>::iterator it = var.map.begin();
+
+        while (it != var.map.end()){
+            if(it->second->name == child[0]->type){
+                outfile << lineCount << ": LD 4," << it->second->address << "(0)\n";  //loading the first child
+                lineCount++;
+                outfile << lineCount << ": ST 4," << it->second->address << "(5)\n"; // storing it
+                lineCount++;
+                outfile <<"*pushing " << it->second->name << " onto the stack" << "\n";
+                outfile << lineCount << ": LDA 5," << "1(5)" <<  "\n";                  // pushing onto the stack
+                lineCount++;
+
+            }
+            it++;
+        }
+
+
+
         mathOps(outfile, lineCount);
     }
 
@@ -197,10 +217,16 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
 //generate code for mathops
 void treenode::mathOps(ofstream &outfile, int &lineCount) {
 
+    cout << "child size before for loop: " << child.size() << endl;
+
+    if(child.size() == 2) {
+        cout << "child contents " << child[0]->type << endl;
+        cout << "child contents " << child[1]->type << endl;
+    }
 
     for(int i = 0; i < child.size(); i++){
 
-
+//cout << child.size();
         // do stuff if +
         // goes through map to match variables to their addresses, if not found in map then assumes it
         // is a constant value -- such as x + 4 would assume 4 is the constant instead of a variable
@@ -220,12 +246,14 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
             // error listed below
             while (it != var.map.end()) {
                 if (it->second->name == child[0]->type) {
+                    cout << "*" << child[0]->type << "*";
                     string address = it->second->address;
-                    cout << address;
+                    //cout <<address;
                 }
                 if (it->second->name == child[1]->type) {
+                    cout << "#" << child[1]->type << "#";
                     string address2 = it->second->address;
-                    cout << address2;
+                    //cout << address2;
                 }
                 it++;
             }
@@ -233,7 +261,8 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
 
 
         // errors when recursing here, because tries to reach children that do not exist
-        //child[i]->mathOps(outfile, lineCount);
+       // cout << "this is child[i] text: " << child[i]->type << endl;
+        child[i]->mathOps(outfile, lineCount);
     }
 
 }
