@@ -161,21 +161,21 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
                            child[1]->type == "+" || child[1]->type == "-" || child[1]->type == "*" || child[1]->type == "/")){
         cout << " rulenum180 child[0] type: " << child[0]->type<<endl;
 
-        unordered_map<int, SymTab*>::iterator it = var.map.begin();
-
-        while (it != var.map.end()){
-            if(it->second->name == child[0]->type){
-                outfile << lineCount << ": LD 4," << it->second->address << "(0)\n";  //loading the first child
-                lineCount++;
-                outfile << lineCount << ": ST 4," << it->second->address << "(5)\n"; // storing it
-                lineCount++;
-                outfile <<"*pushing " << it->second->name << " onto the stack" << "\n";
-                outfile << lineCount << ": LDA 5," << "1(5)" <<  "\n";                  // pushing onto the stack
-                lineCount++;
-
-            }
-            it++;
-        }
+//        unordered_map<int, SymTab*>::iterator it = var.map.begin();
+//
+//        while (it != var.map.end()){
+//            if(it->second->name == child[0]->type){
+//                outfile << lineCount << ": LD 4," << it->second->address << "(0)\n";  //loading the first child
+//                lineCount++;
+//                outfile << lineCount << ": ST 4," << it->second->address << "(5)\n"; // storing it
+//                lineCount++;
+//                outfile <<"*pushing " << it->second->name << " onto the stack" << "\n";
+//                outfile << lineCount << ": LDA 5," << "1(5)" <<  "\n";                  // pushing onto the stack
+//                lineCount++;
+//
+//            }
+//            it++;
+//        }
 
 
 
