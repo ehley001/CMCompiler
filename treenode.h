@@ -36,6 +36,10 @@ public:
 
     int intVal;
 
+    int offset;
+
+    int tempOffset;
+
     string assignmentAddress = ""; //saves address location of a variable we are assigning to
 
     int assignmentCounter = 0; //keeps address from overwriting itself
