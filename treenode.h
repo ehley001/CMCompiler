@@ -30,10 +30,15 @@ public:
 
     void searchGlobal();
 
+    string operations [4] = {"+", "-", "*", "/"};
 
     int ruleNum; //int for keeping track of rules
 
     int intVal;
+
+    string assignmentAddress = ""; //saves address location of a variable we are assigning to
+
+    int assignmentCounter = 0; //keeps address from overwriting itself
 
     string type; // used for variables, parameters and functions
 
@@ -45,7 +50,7 @@ public:
 
     void codeGeneration(ofstream &outfile, int &count);
 
-    void mathOps(ofstream &outfile, int &count);
+    void mathOps(ofstream &outfile, int &count, string &assignmentAddress);
 
     void printTable(); // calls FunctionTable to print out the table
 

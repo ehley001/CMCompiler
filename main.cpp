@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
     root->buildMapVec("global"); //passing in global first, since thats the first section
 
     //after table has been built, print it
-    //root->printTable();
+    root->printTable();
 
     string fileName = string(argv[1]);
     fileName = fileName.substr(0, fileName.length()-2) + "tm";
