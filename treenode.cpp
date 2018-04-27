@@ -161,24 +161,6 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
                            child[1]->type == "+" || child[1]->type == "-" || child[1]->type == "*" || child[1]->type == "/")){
         cout << " rulenum180 child[0] type: " << child[0]->type<<endl;
 
-//        unordered_map<int, SymTab*>::iterator it = var.map.begin();
-//
-//        while (it != var.map.end()){
-//            if(it->second->name == child[0]->type){
-//                outfile << lineCount << ": LD 4," << it->second->address << "(0)\n";  //loading the first child
-//                lineCount++;
-//                outfile << lineCount << ": ST 4," << it->second->address << "(5)\n"; // storing it
-//                lineCount++;
-//                outfile <<"*pushing " << it->second->name << " onto the stack" << "\n";
-//                outfile << lineCount << ": LDA 5," << "1(5)" <<  "\n";                  // pushing onto the stack
-//                lineCount++;
-//
-//            }
-//            it++;
-//        }
-
-
-
         mathOps(outfile, lineCount);
     }
 
@@ -217,22 +199,28 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
 //generate code for mathops
 void treenode::mathOps(ofstream &outfile, int &lineCount) {
 
-    cout << "child size before for loop: " << child.size() << endl;
+  //  cout << "child size before for loop: " << child.size() << endl;
 
     if(child.size() == 2) {
-        cout << "child contents " << child[0]->type << endl;
-        cout << "child contents " << child[1]->type << endl;
+   //     cout << "child contents " << child[0]->type << endl;
+   //     cout << "child contents " << child[1]->type << endl;
     }
 
     for(int i = 0; i < child.size(); i++){
 
-//cout << child.size();
+
         // do stuff if +
         // goes through map to match variables to their addresses, if not found in map then assumes it
         // is a constant value -- such as x + 4 would assume 4 is the constant instead of a variable
         // this will be the same code for each operation, with a change in the outfile statements
         if(child[i]->type == "+"){
             // address of left side, can do checks if this is empty string, then you know its a constant or another mathop
+
+            if(child.size() == 2){
+                cout<<"****"<<child[i]->child[0]->type;
+                cout<<"****"<<child[i]->child[1]->type;
+            }
+
             string address = "";
             // address of right side
             string address2 = "";
@@ -244,19 +232,82 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
             // than "+", which is not found within the table. statements handling the side with no address (constants,
             // variables, etc.) should be handled after this while loop with recursion. Recursion was taken out due to
             // error listed below
+
+            bool isConstant = false;
+            int doubleConstant = 0;
+
             while (it != var.map.end()) {
-                if (it->second->name == child[0]->type) {
-                    cout << "*" << child[0]->type << "*";
+//                cout<< "map name:" << it->second->name << endl;
+//                cout << "tree name:" << child[i]->child[1]->type<<endl;
+
+                if (it->second->name == child[i]->child[0]->type) {
+                    //cout << "*" << child[0]->type << "*";
+//                    outfile << lineCount << ": ST 4," << it->second->address << "(0)\n";
+//                    lineCount++;
+                    outfile << lineCount << ": LDA 5,1(5)\n";
+                    lineCount++;
+                    outfile << lineCount << ": LD 2," << it->second->address << "(0)\n";
+                    lineCount++;
+                    outfile << lineCount << ": LDA 5,-1(5)\n";
+                    lineCount++;
                     string address = it->second->address;
                     //cout <<address;
                 }
-                if (it->second->name == child[1]->type) {
-                    cout << "#" << child[1]->type << "#";
+                 else if (it->second->name == child[i]->child[1]->type) {
+                    //cout << "#" << child[1]->type << "#";
+//                    outfile << lineCount << ": ST 4," << it->second->address << "(0)\n";
+//                    lineCount++;
+                    outfile << lineCount << ": LDA 5,1(5)\n";
+                    lineCount++;
+                    outfile << lineCount << ": LD 2," << it->second->address << "(0)\n";
+                    lineCount++;
+                    outfile << lineCount << ": LDA 5,-1(5)\n";
+                    lineCount++;
                     string address2 = it->second->address;
                     //cout << address2;
+                } else{ // this is working
+
+                //TODO this works for every case except for adding two constants
+
+//               { (it->second->name != child[i]->child[0]->type)
+                    //cout << "#" << child[1]->type << "#";
+                    cout << "testing:" << child[i]->child[1]->type << endl;
+                    outfile << lineCount << ": LDC 1," << child[i]->child[1]->type << "(5)\n";
+                    lineCount++;
+                    string address2 = it->second->address;
+                    isConstant = true;
+                    doubleConstant++;
+
+                    //cout << address2;
                 }
+
+
+//                if (it->second->name != child[i]->child[1]->type) {
+//                    //cout << "#" << child[1]->type << "#";
+//                    cout << "testing:" << child[i]->child[1]->type << endl;
+//                    outfile << lineCount << ": LDC 5," << child[i]->child[1]->type << "(5)\n";
+//                    string address2 = it->second->address;
+//                    //cout << address2;
+//                }
+
+
                 it++;
             }
+
+            if(isConstant == true) {
+                outfile << lineCount << ": ADD 4,2,1\n";
+                lineCount++;
+            }else{
+                outfile << lineCount << ": ADD 4,4,2\n";
+                lineCount++;
+            }
+
+
+
+
+
+            outfile<<lineCount<<": ST 4,0(0)\n";
+            lineCount++;
         }
 
 
