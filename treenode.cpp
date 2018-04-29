@@ -159,9 +159,8 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
     // finds mathops to do stuff
     if(ruleNum == 180 && (//child[0]->type == "+" || child[0]->type == "-" || child[0]->type == "*" || child[0]->type == "/" ||
                            child[1]->type == "+" || child[1]->type == "-" || child[1]->type == "*" || child[1]->type == "/")){
-        cout << " rulenum180 child[0] type: " << child[0]->type<<endl;
 
-        mathOps(outfile, lineCount, assignmentAddress);
+        assign(outfile, lineCount);
     }
 
 
@@ -196,66 +195,57 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
     }
 }
 
-//generate code for mathops
-void treenode::mathOps(ofstream &outfile, int &lineCount, string &assignedAddress) {
+void treenode::assign(ofstream &outfile, int &lineCount){
 
+    string tempAddress = "";
+    unordered_map<int, SymTab*>::iterator it = var.map.begin();
+    while (it != var.map.end()) {
+        if (it->second->name == child[0]->type) {
+            tempAddress = it->second->address;
+        }
+        it++;
+    }
+
+    if(child[1]->ruleNum == 220 || 240){
+
+        mathOps(outfile, lineCount);
+        outfile << lineCount << ": ST 4," << tempAddress << "(0)\n";
+        lineCount++;
+    }
+}
+
+//generate code for mathops
+void treenode::mathOps(ofstream &outfile, int &lineCount) {
+
+    //stack operations for later, push and pop
+//    outfile << lineCount << ": LDA 5,1(5)\n";
+//    lineCount++;
+//    outfile << lineCount << ": LDA 5,-1(5)\n";
+//    lineCount++;
 
     // stores the assignment address, this is passed in as an argument so its not lost recursively
-    if(assignmentCounter == 0 && type == "assignment"){
-        unordered_map<int, SymTab*>::iterator it = var.map.begin();
-        while (it != var.map.end()) {
-            if (it->second->name == child[0]->type){
-                assignedAddress = it->second->address;
-            }
-            it++;
-        }
-        assignmentCounter++;
-    }
 
     for(int i = 0; i < child.size(); i++){
 
-
-
-        // do stuff if +
-        // goes through map to match variables to their addresses, if not found in map then assumes it
-        // is a constant value -- such as x + 4 would assume 4 is the constant instead of a variable
-        // this will be the same code for each operation, with a change in the outfile statements
         if(child[i]->type == "+"){
-            // address of left side, can do checks if this is empty string, then you know its a constant or another mathop
-
-            if(child.size() == 2){
-                cout<<"****"<<child[i]->child[0]->type;
-                cout<<"****"<<child[i]->child[1]->type;
-            }
 
             string address = "";
             // address of right side
             string address2 = "";
             unordered_map<int, SymTab*>::iterator it = var.map.begin();
 
-            // finds the address locations of the two children, if they exist, and sets them both to constants we can
-            // use in our outfile.... hopefully
-            // running on simpleExpressionc. , this prints out the address of x (0), as it is the only node we go to other
-            // than "+", which is not found within the table. statements handling the side with no address (constants,
-            // variables, etc.) should be handled after this while loop with recursion. Recursion was taken out due to
-            // error listed below
 
             bool isConstant = false;
             int doubleConstant = 0;
             bool first = false, second = false;
 
-            child[1]->mathOps(outfile, lineCount, assignedAddress);
+            child[1]->mathOps(outfile, lineCount);
 
             while (it != var.map.end()) {
 
 
                 if (it->second->name == child[i]->child[0]->type) {
-
-                    outfile << lineCount << ": LDA 5,1(5)\n";
-                    lineCount++;
                     outfile << lineCount << ": LD 2," << it->second->address << "(0)\n";
-                    lineCount++;
-                    outfile << lineCount << ": LDA 5,-1(5)\n";
                     lineCount++;
                     string address = it->second->address;
                     first = true;
@@ -263,22 +253,14 @@ void treenode::mathOps(ofstream &outfile, int &lineCount, string &assignedAddres
                 }
                  else if (it->second->name == child[i]->child[1]->type) {
 
-                    outfile << lineCount << ": LDA 5,1(5)\n";
-                    lineCount++;
                     outfile << lineCount << ": LD 2," << it->second->address << "(0)\n";
-                    lineCount++;
-                    outfile << lineCount << ": LDA 5,-1(5)\n";
                     lineCount++;
                     string address2 = it->second->address;
                     second = true;
 
                 }
 
-                else{ // this is working
-
-                //TODO this works for every case except for adding two constants
-
-//
+                else{
                     string address2 = it->second->address;
                     isConstant = true;
 
@@ -316,12 +298,6 @@ void treenode::mathOps(ofstream &outfile, int &lineCount, string &assignedAddres
                 lineCount++;
             }
 
-
-
-
-
-            outfile<<lineCount<<": ST 4," << assignmentAddress <<"(0)\n";
-            lineCount++;
         }
 
         if(child[i]->type == "-"){
@@ -349,23 +325,14 @@ void treenode::mathOps(ofstream &outfile, int &lineCount, string &assignedAddres
 
                 if (it->second->name == child[i]->child[0]->type) {
 
-                    outfile << lineCount << ": LDA 5,1(5)\n";
-                    lineCount++;
                     outfile << lineCount << ": LD 2," << it->second->address << "(0)\n";
-                    lineCount++;
-                    outfile << lineCount << ": LDA 5,-1(5)\n";
                     lineCount++;
                     string address = it->second->address;
                     first = true;
 
                 }
                 else if (it->second->name == child[i]->child[1]->type) {
-
-                    outfile << lineCount << ": LDA 5,1(5)\n";
-                    lineCount++;
-                    outfile << lineCount << ": LD 6," << it->second->address << "(0)\n";
-                    lineCount++;
-                    outfile << lineCount << ": LDA 5,-1(5)\n";
+                    outfile << lineCount << ": LD 2," << it->second->address << "(0)\n";
                     lineCount++;
                     string address2 = it->second->address;
                     second = true;
@@ -406,29 +373,28 @@ void treenode::mathOps(ofstream &outfile, int &lineCount, string &assignedAddres
                 outfile << tempOffset << ": SUB 4,2,1\n";
                 lineCount++;
             }else if (one != "*" && one != "-" && one != "+" && one != "-" && two != "*" && two != "-" && two != "+" && two != "-"){
-                outfile << tempOffset << ": SUB 4,4,6\n";
+                outfile << tempOffset << ": SUB 4,4,2\n";
                 cout<<tempOffset<"^^";
                 lineCount++;
             }
             else if(isConstant == true && (one == "*" || one == "-" || one == "+" || one == "-" || two == "*" || two == "-" || two == "+" || two != "-")){
-                offset = 10;
-                outfile << lineCount + offset << ": SUB 4,2,1\n";
+                offset = 9;
+                // these statements pop our stack
+                outfile << lineCount + offset + 1<< ": LDA 5,-1(5)\n";
+                outfile << lineCount + offset + 2<< ": LD 1,0(5)\n";
+                outfile << lineCount + offset + 3<< ": LDA 5,-1(5)\n";
+                outfile << lineCount + offset + 4<< ": LD 2,0(5)\n";
+                outfile << lineCount + offset + 5<< ": SUB 4,2,1\n";
                 tempOffset = lineCount + 1;
-                cout<<tempOffset<"^^";
                 offset++;
             }
             else{
                 offset = 5;
-                outfile << lineCount + offset << ": SUB 4,4,6\n";
+                outfile << lineCount + offset << ": SUB 4,4,2\n";
                 tempOffset = lineCount + 1;
-                cout<<tempOffset<"^^";
                 offset++;
             }
 
-            outfile<<lineCount + offset<<": ST 4," << assignedAddress << "(0)\n";
-            if (offset = 0){
-                lineCount++;
-            }
         }
 
 
@@ -436,10 +402,6 @@ void treenode::mathOps(ofstream &outfile, int &lineCount, string &assignedAddres
         if(child[i]->type == "*"){
             // address of left side, can do checks if this is empty string, then you know its a constant or another mathop
 
-            if(child.size() == 2){
-                cout<<"****"<<child[i]->child[0]->type;
-                cout<<"****"<<child[i]->child[1]->type;
-            }
 
             string address = "";
             // address of right side
@@ -460,26 +422,15 @@ void treenode::mathOps(ofstream &outfile, int &lineCount, string &assignedAddres
 
             while (it != var.map.end()) {
 
-
                 if (it->second->name == child[i]->child[0]->type) {
-
-                    outfile << lineCount << ": LDA 5,1(5)\n";
-                    lineCount++;
-                    outfile << lineCount << ": LD 2," << it->second->address << "(0)\n";
-                    lineCount++;
-                    outfile << lineCount << ": LDA 5,-1(5)\n";
+                    outfile << lineCount << ": LD 4," << it->second->address << "(0)\n";
                     lineCount++;
                     string address = it->second->address;
                     first = true;
 
                 }
                 else if (it->second->name == child[i]->child[1]->type) {
-
-                    outfile << lineCount << ": LDA 5,1(5)\n";
-                    lineCount++;
-                    outfile << lineCount << ": LD 6," << it->second->address << "(0)\n";
-                    lineCount++;
-                    outfile << lineCount << ": LDA 5,-1(5)\n";
+                    outfile << lineCount << ": LD 2," << it->second->address << "(0)\n";
                     lineCount++;
                     string address2 = it->second->address;
                     second = true;
@@ -517,28 +468,19 @@ void treenode::mathOps(ofstream &outfile, int &lineCount, string &assignedAddres
 
             //the only time reg 1 is used is when there are constants
             if(isConstant == true ) {
+                // pushes on our stack
                 outfile << lineCount << ": MUL 4,2,1\n";
                 lineCount++;
+                outfile << lineCount << ": ST 4,0(5)\n";
+                lineCount++;
+                outfile << lineCount << ": LDA 5,1(5)\n";
+                lineCount++;
             }else{
-                outfile << lineCount << ": MUL 4,4,6\n";
+                outfile << lineCount << ": MUL 4,4,2\n";
                 lineCount++;
             }
-
-
-
-
-            // move this to multiply print statements
-            outfile<<lineCount<<": ST 4," << assignedAddress << "(0)\n";
-            lineCount++;
         }
-
-
-
-        child[i]->mathOps(outfile, lineCount, assignedAddress);
-
-
-
-
+        child[i]->mathOps(outfile, lineCount);
     }
 
 }

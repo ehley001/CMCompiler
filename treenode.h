@@ -53,8 +53,9 @@ public:
     void makeFile(string file);
 
     void codeGeneration(ofstream &outfile, int &count);
+    void assign(ofstream &outfile, int &count);
 
-    void mathOps(ofstream &outfile, int &count, string &assignmentAddress);
+    void mathOps(ofstream &outfile, int &count);
 
     void printTable(); // calls FunctionTable to print out the table
 
