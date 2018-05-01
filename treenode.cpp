@@ -21,6 +21,8 @@ int numSpace =0;       // space counter
 
 int address = 0;
 vector<int> globalVec;
+
+vector<int> lineNums;
 cGen generator;
 
 
@@ -148,6 +150,8 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
 
         while (it != var.map.end()){
             if(it->second->name == child[0]->type){
+                lineCount = checkLineNums(lineCount);
+
                 outfile << lineCount << ": ST 4," << it->second->address << "(0)\n";
                 lineCount++;
             }
@@ -176,9 +180,41 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
 
             while (it != var.map.end()) {
                 if (it->second->name == child[0]->child[i]->type) {
+                    lineCount = checkLineNums(lineCount);
                     outfile << lineCount << ": LD 4," << it->second->address << "(0)\n";
+                    lineNums.push_back(lineCount);
                     lineCount++;
+                    lineCount = checkLineNums(lineCount);
                     outfile << lineCount << ": OUT 4,0,0\n";
+                    lineNums.push_back(lineCount);
+                    lineCount++;
+                }
+                it++;
+            }
+        }
+    }
+
+    // same as above statement, exept checking for mathops
+
+    if(ruleNum == 262 && type == "output" && child[0]->child[0]->child.size() == 2){
+         cout << "in the out";
+
+
+        child[0]->assignOut(outfile,lineCount);
+
+        for(int i = 0; i < child[0]->child.size(); i++){
+
+            unordered_map<int, SymTab*>::iterator it = var.map.begin();
+
+            while (it != var.map.end()) {
+                if (it->second->name == child[0]->child[i]->type) {
+                    lineCount = checkLineNums(lineCount);
+                    outfile << lineCount << ": LD 4," << it->second->address << "(0)\n";
+                    lineNums.push_back(lineCount);
+                    lineCount++;
+                    lineCount = checkLineNums(lineCount);
+                    outfile << lineCount << ": OUT 4,0,0\n";
+                    lineNums.push_back(lineCount);
                     lineCount++;
                 }
                 it++;
@@ -195,6 +231,34 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
     }
 }
 
+
+void treenode::assignOut(ofstream &outfile, int &lineCount){
+
+    string tempAddress = "";
+    unordered_map<int, SymTab*>::iterator it = var.map.begin();
+    while (it != var.map.end()) {
+        if (it->second->name == child[0]->child[0]->type) {
+            tempAddress = it->second->address;
+        }
+        it++;
+    }
+
+    if(child[0]->child[0]->ruleNum == 220 || 240){
+cout<<"in assign out";
+        mathOps(outfile, lineCount);
+        lineCount = checkLineNums(lineCount);
+        outfile << lineCount << ": ST 4," << tempAddress << "(0)\n";
+        lineNums.push_back(lineCount);
+        lineCount++;
+
+        lineCount = checkLineNums(lineCount);
+        outfile << lineCount << ": OUT 4,0,0\n";
+        lineNums.push_back(lineCount);
+        lineCount++;
+    }
+
+}
+
 void treenode::assign(ofstream &outfile, int &lineCount){
 
     string tempAddress = "";
@@ -209,9 +273,13 @@ void treenode::assign(ofstream &outfile, int &lineCount){
     if(child[1]->ruleNum == 220 || 240){
 
         mathOps(outfile, lineCount);
+        lineCount = checkLineNums(lineCount);
         outfile << lineCount << ": ST 4," << tempAddress << "(0)\n";
+        lineNums.push_back(lineCount);
         lineCount++;
+
     }
+
 }
 
 //generate code for mathops
@@ -224,6 +292,7 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
 //    lineCount++;
 
     // stores the assignment address, this is passed in as an argument so its not lost recursively
+
 
     for(int i = 0; i < child.size(); i++){
 
@@ -239,13 +308,16 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
             int doubleConstant = 0;
             bool first = false, second = false;
 
-            child[1]->mathOps(outfile, lineCount);
+          //  child[1]->mathOps(outfile, lineCount);
 
             while (it != var.map.end()) {
 
 
                 if (it->second->name == child[i]->child[0]->type) {
+
+                    lineCount = checkLineNums(lineCount);
                     outfile << lineCount << ": LD 2," << it->second->address << "(0)\n";
+                    lineNums.push_back(lineCount);
                     lineCount++;
                     string address = it->second->address;
                     first = true;
@@ -253,7 +325,9 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
                 }
                  else if (it->second->name == child[i]->child[1]->type) {
 
+                    lineCount = checkLineNums(lineCount);
                     outfile << lineCount << ": LD 2," << it->second->address << "(0)\n";
+                    lineNums.push_back(lineCount);
                     lineCount++;
                     string address2 = it->second->address;
                     second = true;
@@ -274,39 +348,122 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
             string two = child[i]->child[1]->type;
             //if they are both constants, and they are not an operation
             if ((first == false && second == false) && one != "*" && one != "-" && one != "+" && one != "-" && two != "*" && two != "-" && two != "+" && two != "-"){
+
+                lineCount = checkLineNums(lineCount);
                 outfile << lineCount << ": LDC 1," << child[i]->child[0]->type << "(5)\n";
+                lineNums.push_back(lineCount);
                 lineCount++;
+
+                lineCount = checkLineNums(lineCount);
                 outfile << lineCount << ": LDC 2," << child[i]->child[1]->type << "(5)\n";
+                lineNums.push_back(lineCount);
                 lineCount++;
 
                 //if only the first child is a constant
             } else if(first == false && second == true && (one != "*" || "/" || "+" || "-")){
+
+                lineCount = checkLineNums(lineCount);
                 outfile << lineCount << ": LDC 1," << child[i]->child[0]->type << "(5)\n";
+                lineNums.push_back(lineCount);
                 lineCount++;
                 //if only the second child is a constant
             } else if (first == true && second == false && (two != "*" || "/" || "+" || "-")){
+
+                lineCount = checkLineNums(lineCount);
                 outfile << lineCount << ": LDC 1," << child[i]->child[1]->type << "(5)\n";
+                lineNums.push_back(lineCount);
                 lineCount++;
             }
 
             //the only time reg 1 is used is when there are constants
-            if(isConstant == true) {
+            if ((first == false && second == false) && one != "*" && one != "-" && one != "+" && one != "-" && two != "*" && two != "-" && two != "+" && two != "-"){
+
+                lineCount = checkLineNums(lineCount);
+                outfile << lineCount << ": LDC 1," << child[i]->child[0]->type << "(5)\n";
+                lineNums.push_back(lineCount);
+                lineCount++;
+
+                lineCount = checkLineNums(lineCount);
+                outfile << lineCount << ": LDC 2," << child[i]->child[1]->type << "(5)\n";
+                lineNums.push_back(lineCount);
+                lineCount++;
+
+                //if only the first child is a constant
+            } else if(first == false && second == true && (one != "*" || "/" || "+" || "-")){
+
+                lineCount = checkLineNums(lineCount);
+                outfile << lineCount << ": LDC 1," << child[i]->child[0]->type << "(5)\n";
+                lineNums.push_back(lineCount);
+                lineCount++;
+                //if only the second child is a constant
+            } else if (first == true && second == false && (two != "*" || "/" || "+" || "-")){
+
+                lineCount = checkLineNums(lineCount);
+                outfile << lineCount << ": LDC 1," << child[i]->child[1]->type << "(5)\n";
+                lineNums.push_back(lineCount);
+                lineCount++;
+            }
+
+            //the only time reg 1 is used is when there are constants
+            if(isConstant == true && one != "*" && one != "-" && one != "+" && one != "-" && two != "*" && two != "-" && two != "+" && two != "-") {
+
+                lineCount = checkLineNums(lineCount);
                 outfile << lineCount << ": ADD 4,2,1\n";
+                lineNums.push_back(lineCount);
                 lineCount++;
-            }else{
+
+            }else if (one != "*" && one != "-" && one != "+" && one != "-" && two != "*" && two != "-" && two != "+" && two != "-"){
+
+                lineCount = checkLineNums(lineCount);
                 outfile << lineCount << ": ADD 4,4,2\n";
+
+                lineNums.push_back(lineCount);
+
                 lineCount++;
+            }
+            else if(isConstant == true && (one == "*" || one == "-" || one == "+" || one == "-" || two == "*" || two == "-" || two == "+" || two != "-")){
+                offset = 9;
+                // these statements pop our stack
+
+                tmpLine = lineCount;
+
+
+                outfile << lineCount + offset + 1<< ": LDA 5,-1(5)\n";
+                lineNums.push_back(lineCount + offset + 1);
+
+                outfile << lineCount + offset + 2<< ": LD 1,0(5)\n";
+                lineNums.push_back(lineCount + offset + 2);
+
+                outfile << lineCount + offset + 3<< ": LDA 5,-1(5)\n";
+                lineNums.push_back(lineCount + offset + 3);
+
+                outfile << lineCount + offset + 4<< ": LD 2,0(5)\n";
+                lineNums.push_back(lineCount + offset + 4);
+
+                outfile << lineCount + offset + 5<< ": ADD 4,2,1\n";
+                lineNums.push_back(lineCount + offset + 5);
+                tempOffset = lineCount + 1;
+
+
+                offset++;
+
+
+            }
+            else{
+                offset = 5;
+
+                outfile << lineCount + offset << ": ADD 4,4,2\n";
+                lineNums.push_back(lineCount + offset );
+                tempOffset = lineCount + 1;
+
+                offset++;
+
             }
 
         }
 
         if(child[i]->type == "-"){
             // address of left side, can do checks if this is empty string, then you know its a constant or another mathop
-
-            if(child.size() == 2){
-                cout<<"****"<<child[i]->child[0]->type;
-                cout<<"****"<<child[i]->child[1]->type;
-            }
 
             string address = "";
             // address of right side
@@ -325,14 +482,19 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
 
                 if (it->second->name == child[i]->child[0]->type) {
 
+                    lineCount = checkLineNums(lineCount);
                     outfile << lineCount << ": LD 2," << it->second->address << "(0)\n";
+                    lineNums.push_back(lineCount);
                     lineCount++;
                     string address = it->second->address;
                     first = true;
 
                 }
                 else if (it->second->name == child[i]->child[1]->type) {
+
+                    lineCount = checkLineNums(lineCount);
                     outfile << lineCount << ": LD 2," << it->second->address << "(0)\n";
+                    lineNums.push_back(lineCount);
                     lineCount++;
                     string address2 = it->second->address;
                     second = true;
@@ -351,48 +513,98 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
             // variables so we dont have to write out child 1million and a half times
             string one = child[i]->child[0]->type;
             string two = child[i]->child[1]->type;
+
+
+//            if (one == "*" || one == "/" ||  one == "+" || one == "-" ){
+//                oneCount = lineCount;
+//                cout << "one:" << lineCount;
+//            }
+//
+//            if( two == "*" || two == "/" ||  two == "+" || two == "-"){
+//                twoCount++;
+//                cout << "two:" << twoCount;
+//            }
             //if they are both constants, and they are not an operation
             if ((first == false && second == false) && one != "*" && one != "-" && one != "+" && one != "-" && two != "*" && two != "-" && two != "+" && two != "-"){
+
+                lineCount = checkLineNums(lineCount);
                 outfile << lineCount << ": LDC 1," << child[i]->child[0]->type << "(5)\n";
+                lineNums.push_back(lineCount);
                 lineCount++;
+
+                lineCount = checkLineNums(lineCount);
                 outfile << lineCount << ": LDC 2," << child[i]->child[1]->type << "(5)\n";
+                lineNums.push_back(lineCount);
                 lineCount++;
 
                 //if only the first child is a constant
             } else if(first == false && second == true && (one != "*" || "/" || "+" || "-")){
+
+                lineCount = checkLineNums(lineCount);
                 outfile << lineCount << ": LDC 1," << child[i]->child[0]->type << "(5)\n";
+                lineNums.push_back(lineCount);
                 lineCount++;
                 //if only the second child is a constant
             } else if (first == true && second == false && (two != "*" || "/" || "+" || "-")){
+
+                lineCount = checkLineNums(lineCount);
                 outfile << lineCount << ": LDC 1," << child[i]->child[1]->type << "(5)\n";
+                lineNums.push_back(lineCount);
                 lineCount++;
             }
 
             //the only time reg 1 is used is when there are constants
             if(isConstant == true && one != "*" && one != "-" && one != "+" && one != "-" && two != "*" && two != "-" && two != "+" && two != "-") {
-                outfile << tempOffset << ": SUB 4,2,1\n";
+
+                lineCount = checkLineNums(lineCount);
+                outfile << lineCount << ": SUB 4,2,1\n";
+                lineNums.push_back(lineCount);
                 lineCount++;
             }else if (one != "*" && one != "-" && one != "+" && one != "-" && two != "*" && two != "-" && two != "+" && two != "-"){
-                outfile << tempOffset << ": SUB 4,4,2\n";
-                cout<<tempOffset<"^^";
+
+                lineCount = checkLineNums(lineCount);
+                outfile << lineCount << ": SUB 4,4,2\n";
+                lineNums.push_back(lineCount);
+
                 lineCount++;
             }
             else if(isConstant == true && (one == "*" || one == "-" || one == "+" || one == "-" || two == "*" || two == "-" || two == "+" || two != "-")){
                 offset = 9;
                 // these statements pop our stack
+
+                tmpLine = lineCount;
+
+
                 outfile << lineCount + offset + 1<< ": LDA 5,-1(5)\n";
+                lineNums.push_back(lineCount + offset + 1);
+
                 outfile << lineCount + offset + 2<< ": LD 1,0(5)\n";
+                lineNums.push_back(lineCount + offset + 2);
+
                 outfile << lineCount + offset + 3<< ": LDA 5,-1(5)\n";
+                lineNums.push_back(lineCount + offset + 3);
+
                 outfile << lineCount + offset + 4<< ": LD 2,0(5)\n";
+                lineNums.push_back(lineCount + offset + 4);
+
                 outfile << lineCount + offset + 5<< ": SUB 4,2,1\n";
+                lineNums.push_back(lineCount + offset + 5);
                 tempOffset = lineCount + 1;
+
+
                 offset++;
+
+
             }
             else{
                 offset = 5;
+
                 outfile << lineCount + offset << ": SUB 4,4,2\n";
+                lineNums.push_back(lineCount + offset );
                 tempOffset = lineCount + 1;
+
                 offset++;
+
             }
 
         }
@@ -417,20 +629,157 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
 
             bool isConstant = false;
             int doubleConstant = 0;
+            int doubleVar = 2;
+            bool first = false, second = false;
+            string doubleAddress = "";
+
+            while (it != var.map.end()) {
+
+                if(child[i]->child[0]->type == child[i]->child[1]->type){
+                    lineCount = checkLineNums(lineCount);
+                    if(doubleVar < 4){
+                        doubleAddress = it->second->address;
+                    }
+                    outfile << lineCount << ": LD " << doubleVar << "," << doubleAddress << "(0)\n";
+                    lineNums.push_back(lineCount);
+                    lineCount++;
+                    doubleVar*=2;
+                    first = true;
+                    second = true;
+                }
+
+                else if (it->second->name == child[i]->child[0]->type) {
+
+
+                    lineCount = checkLineNums(lineCount);
+                    outfile << lineCount << ": LD 4," << it->second->address << "(0)\n";
+                    lineNums.push_back(lineCount);
+
+                   // lineCount++;
+                    string address = it->second->address;
+                    first = true;
+
+                }
+                else if (it->second->name == child[i]->child[1]->type) {
+
+                    lineCount = checkLineNums(lineCount);
+                    outfile << lineCount << ": LD 2," << it->second->address << "(0)\n";
+                    lineNums.push_back(lineCount);
+                    //lineCount++;
+                    string address2 = it->second->address;
+                    second = true;
+
+                } else{ // this is working
+
+
+                    string address2 = it->second->address;
+                    isConstant = true;
+
+
+                }
+                it++;
+            }
+
+            // variables so we dont have to write out child 1million and a half times
+            string one = child[i]->child[0]->type;
+            string two = child[i]->child[1]->type;
+
+            //if they are both constants, and they are not an operation
+            if ((first == false && second == false) && one != "*" && one != "-" && one != "+" && one != "-" && two != "*" && two != "-" && two != "+" && two != "-"){
+
+                lineCount = checkLineNums(lineCount);
+                outfile << lineCount << ": LDC 1," << child[i]->child[0]->type << "(5)\n";
+                lineNums.push_back(lineCount);
+                lineCount++;
+
+                lineCount = checkLineNums(lineCount);
+                outfile << lineCount << ": LDC 2," << child[i]->child[1]->type << "(5)\n";
+                lineNums.push_back(lineCount);
+                lineCount++;
+
+                //if only the first child is a constant
+            } else if(first == false && second == true && one != "*" && one != "-" && one != "+" && one != "-"){
+
+                lineCount = checkLineNums(lineCount);
+                outfile << lineCount << ": LDC 1," << child[i]->child[0]->type << "(5)\n";
+                lineNums.push_back(lineCount);
+                lineCount++;
+                //if only the second child is a constant
+            } else if (first == true && second == false && two != "*" && two != "-" && two != "+" && two != "-"){
+
+                lineCount = checkLineNums(lineCount);
+                outfile << lineCount << ": LDC 1," << child[i]->child[1]->type << "(5)\n";
+                lineNums.push_back(lineCount);
+                lineCount++;
+            }
+
+            //the only time reg 1 is used is when there are constants
+            if(isConstant == true ) {
+                // pushes on our stack
+                lineCount = checkLineNums(lineCount);
+                outfile << lineCount << ": MUL 4,2,1\n";
+                lineNums.push_back(lineCount);
+                lineCount++;
+
+                lineCount = checkLineNums(lineCount);
+                outfile << lineCount << ": ST 4,0(5)\n";
+                lineNums.push_back(lineCount);
+                lineCount++;
+
+                lineCount = checkLineNums(lineCount);
+                outfile << lineCount << ": LDA 5,1(5)\n";
+                lineNums.push_back(lineCount);
+                lineCount++;
+            }else{
+
+               // lineCount = checkLineNums(lineCount);
+                outfile << lineCount << ": MUL 4,4,2\n";
+                lineNums.push_back(lineCount);
+                lineCount++;
+            }
+        }
+
+
+        // DIVISION rule
+        if(child[i]->type == "/"){
+            // address of left side, can do checks if this is empty string, then you know its a constant or another mathop
+
+
+            string address = "";
+            // address of right side
+            string address2 = "";
+            unordered_map<int, SymTab*>::iterator it = var.map.begin();
+
+            // finds the address locations of the two children, if they exist, and sets them both to constants we can
+            // use in our outfile.... hopefully
+            // running on simpleExpressionc. , this prints out the address of x (0), as it is the only node we go to other
+            // than "+", which is not found within the table. statements handling the side with no address (constants,
+            // variables, etc.) should be handled after this while loop with recursion. Recursion was taken out due to
+            // error listed below
+
+            bool isConstant = false;
+            int doubleConstant = 0;
             bool first = false, second = false;
 
 
             while (it != var.map.end()) {
 
                 if (it->second->name == child[i]->child[0]->type) {
+
+                    lineCount = checkLineNums(lineCount);
                     outfile << lineCount << ": LD 4," << it->second->address << "(0)\n";
-                    lineCount++;
+                    lineNums.push_back(lineCount);
+                    lineCount = checkLineNums(lineCount);
+                    //lineCount++;
                     string address = it->second->address;
                     first = true;
 
                 }
                 else if (it->second->name == child[i]->child[1]->type) {
+
+                    lineCount = checkLineNums(lineCount);
                     outfile << lineCount << ": LD 2," << it->second->address << "(0)\n";
+                    lineNums.push_back(lineCount);
                     lineCount++;
                     string address2 = it->second->address;
                     second = true;
@@ -451,37 +800,90 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
             string two = child[i]->child[1]->type;
             //if they are both constants, and they are not an operation
             if ((first == false && second == false) && one != "*" && one != "-" && one != "+" && one != "-" && two != "*" && two != "-" && two != "+" && two != "-"){
+
+                lineCount = checkLineNums(lineCount);
                 outfile << lineCount << ": LDC 1," << child[i]->child[0]->type << "(5)\n";
+                lineNums.push_back(lineCount);
                 lineCount++;
+
+                lineCount = checkLineNums(lineCount);
                 outfile << lineCount << ": LDC 2," << child[i]->child[1]->type << "(5)\n";
+                lineNums.push_back(lineCount);
                 lineCount++;
 
                 //if only the first child is a constant
             } else if(first == false && second == true && one != "*" && one != "-" && one != "+" && one != "-"){
+
+                lineCount = checkLineNums(lineCount);
                 outfile << lineCount << ": LDC 1," << child[i]->child[0]->type << "(5)\n";
+                lineNums.push_back(lineCount);
                 lineCount++;
                 //if only the second child is a constant
             } else if (first == true && second == false && two != "*" && two != "-" && two != "+" && two != "-"){
+
+                lineCount = checkLineNums(lineCount);
                 outfile << lineCount << ": LDC 1," << child[i]->child[1]->type << "(5)\n";
+                lineNums.push_back(lineCount);
                 lineCount++;
             }
 
             //the only time reg 1 is used is when there are constants
             if(isConstant == true ) {
                 // pushes on our stack
-                outfile << lineCount << ": MUL 4,2,1\n";
+                lineCount = checkLineNums(lineCount);
+                outfile << lineCount << ": DIV 4,2,1\n";
+                lineNums.push_back(lineCount);
                 lineCount++;
+
+                lineCount = checkLineNums(lineCount);
                 outfile << lineCount << ": ST 4,0(5)\n";
+                lineNums.push_back(lineCount);
                 lineCount++;
+
+                lineCount = checkLineNums(lineCount);
                 outfile << lineCount << ": LDA 5,1(5)\n";
+                lineNums.push_back(lineCount);
                 lineCount++;
             }else{
-                outfile << lineCount << ": MUL 4,4,2\n";
+
+                // lineCount = checkLineNums(lineCount);
+                outfile << lineCount << ": DIV 4,4,2\n";
+                lineNums.push_back(lineCount);
                 lineCount++;
             }
         }
         child[i]->mathOps(outfile, lineCount);
     }
+
+
+    getMax();
+}
+
+int treenode::checkLineNums(int line) {
+
+    bool checker = false;
+ //   cout<<"passed in:" << line <<endl;
+    while(find(lineNums.begin(), lineNums.end(), line) != lineNums.end()){
+        line++;
+        checker = true;
+
+    }
+
+    if (checker == true){
+        lineNums.push_back(line);
+    }
+
+    return  line;
+}
+
+
+int treenode::getMax() {
+
+    if(maxCount <= tempOffset) {
+        maxCount = tempOffset;
+    }
+
+
 
 }
 

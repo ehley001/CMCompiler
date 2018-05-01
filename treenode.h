@@ -18,6 +18,7 @@ public:
 
     vector<treenode*> child;
 
+
    // treenode(int value_arg);  // Constructor
 
     treenode(int numRule, string ruleText);  // new constructor for building the tree
@@ -30,15 +31,27 @@ public:
 
     void searchGlobal();
 
+    int checkLineNums(int line);
+
+    int tmpLine = 0;
+
     string operations [4] = {"+", "-", "*", "/"};
 
     int ruleNum; //int for keeping track of rules
 
     int intVal;
 
-    int offset;
+    int offset = 9;
 
     int tempOffset;
+
+    int oneCount = 0;
+
+    int twoCount = 0;
+
+    int maxCount = 0;
+
+    int getMax();
 
     string assignmentAddress = ""; //saves address location of a variable we are assigning to
 
@@ -54,6 +67,8 @@ public:
 
     void codeGeneration(ofstream &outfile, int &count);
     void assign(ofstream &outfile, int &count);
+
+    void assignOut(ofstream &outfile, int &count);
 
     void mathOps(ofstream &outfile, int &count);
 
