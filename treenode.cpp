@@ -359,6 +359,9 @@ void treenode::ifStatement(ofstream &outfile, int &lineCount){
 
     // occurs if error happens or if both are constants
     if(tempCounter == 0){
+        // here because very good reasons
+        lineCount--;
+
         lineCount = checkLineNums(lineCount);
         outfile << lineCount << ": LDC 4,"<< firstType <<"(0)\n";
         lineNums.push_back(lineCount);
