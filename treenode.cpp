@@ -227,6 +227,8 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
         cout<<lineCount<<"if\n";
         tempCount = lineCount;
         lineCount++;
+
+        ifStatement(outfile, lineCount);
     }
 
 
@@ -238,6 +240,147 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
     }
 }
 
+// gens code for if statements
+// child[0] == relop (>, =>, <, <=, ==), child[1] and child[2] vars/constants
+void treenode::ifStatement(ofstream &outfile, int &lineCount){
+    unordered_map<int, SymTab*>::iterator it = var.map.begin();
+
+    // keeps count of how many variables exist in the statement
+    int tempCounter = 0;
+
+    // stores the address of the first variable, if it exists
+    string firstAddress = "";
+    // stores the type of the first variable, used if this is a constant
+    string firstType = "";
+    // stores the address of the second variable, if it exists
+    string secondAddress = "";
+    // stores the type of the second variable, used if this is a constant
+    string secondType = "";
+    while (it != var.map.end()) {
+        if (it->second->name == child[1]->type) {
+            firstAddress = it->second->address;
+            tempCounter++;
+        }
+
+        else if( it->second->name == child[2]->type){
+            secondAddress = it->second->address;
+            tempCounter++;
+        }
+        it++;
+    }
+
+    // if address of first is not found, then it is constant to be checked
+    if(firstAddress == ""){
+        firstType = child[1]->type;
+    }
+
+    // if address of second is not found, then it is constant to be checked
+    if(secondAddress == ""){
+        secondType = child[2]->type;
+    }
+
+    if(tempCounter == 2){
+        // here because very good reasons
+        lineCount--;
+        lineCount = checkLineNums(lineCount);
+        outfile << lineCount << ": LD 4,"<< firstAddress <<"(0)\n";
+        lineNums.push_back(lineCount);
+        lineCount++;
+
+        lineCount = checkLineNums(lineCount);
+        outfile << lineCount << ": LD 2,"<< secondAddress <<"(0)\n";
+        lineNums.push_back(lineCount);
+        lineCount++;
+
+        lineCount = checkLineNums(lineCount);
+        outfile << lineCount << ": SUB 4,4,2\n";
+        lineNums.push_back(lineCount);
+        lineCount++;
+
+        lineCount = checkLineNums(lineCount);
+        outfile << lineCount << ": JLT 4,2(7)\n";
+        lineNums.push_back(lineCount);
+        lineCount++;
+
+    }
+    // handles ifs with 1 variable in table and 1 constant
+    if(tempCounter ==1){
+        // here because very good reasons
+        lineCount--;
+
+        // the two if statements below mirror each other, to handle x > 2 and 2 > x
+
+        // first child has no type set, meaning it was found in our table. Second is guaranteed to be our constant here
+        if(firstType == ""){
+            lineCount = checkLineNums(lineCount);
+            outfile << lineCount << ": LD 4,"<< firstAddress <<"(0)\n";
+            lineNums.push_back(lineCount);
+            lineCount++;
+
+            lineCount = checkLineNums(lineCount);
+            outfile << lineCount << ": LDC 2,"<< secondType <<"(0)\n";
+            lineNums.push_back(lineCount);
+            lineCount++;
+
+            lineCount = checkLineNums(lineCount);
+            outfile << lineCount << ": SUB 4,4,2\n";
+            lineNums.push_back(lineCount);
+            lineCount++;
+
+            lineCount = checkLineNums(lineCount);
+            outfile << lineCount << ": JLT 4,2(7)\n";
+            lineNums.push_back(lineCount);
+            lineCount++;
+        }
+
+        // second child has no type set, meaning it was found in our table. First is guaranteed to be our constant here
+        else if(secondType == ""){
+            lineCount = checkLineNums(lineCount);
+            outfile << lineCount << ": LDC 4,"<< firstType <<"(0)\n";
+            lineNums.push_back(lineCount);
+            lineCount++;
+
+            lineCount = checkLineNums(lineCount);
+            outfile << lineCount << ": LD 2,"<< secondAddress <<"(0)\n";
+            lineNums.push_back(lineCount);
+            lineCount++;
+
+            lineCount = checkLineNums(lineCount);
+            outfile << lineCount << ": SUB 4,4,2\n";
+            lineNums.push_back(lineCount);
+            lineCount++;
+
+            lineCount = checkLineNums(lineCount);
+            outfile << lineCount << ": JLT 4,2(7)\n";
+            lineNums.push_back(lineCount);
+            lineCount++;
+        }
+    }
+
+    // occurs if error happens or if both are constants
+    if(tempCounter == 0){
+        lineCount = checkLineNums(lineCount);
+        outfile << lineCount << ": LDC 4,"<< firstType <<"(0)\n";
+        lineNums.push_back(lineCount);
+        lineCount++;
+
+        lineCount = checkLineNums(lineCount);
+        outfile << lineCount << ": LDC 2,"<< secondType <<"(0)\n";
+        lineNums.push_back(lineCount);
+        lineCount++;
+
+        lineCount = checkLineNums(lineCount);
+        outfile << lineCount << ": SUB 4,4,2\n";
+        lineNums.push_back(lineCount);
+        lineCount++;
+
+        lineCount = checkLineNums(lineCount);
+        outfile << lineCount << ": JLT 4,2(7)\n";
+        lineNums.push_back(lineCount);
+        lineCount++;
+    }
+
+}
 
 void treenode::assignOut(ofstream &outfile, int &lineCount){
 
@@ -251,7 +394,6 @@ void treenode::assignOut(ofstream &outfile, int &lineCount){
     }
 
     if(child[0]->child[0]->ruleNum == 220 || 240){
-cout<<"in assign out";
         mathOps(outfile, lineCount);
         lineCount = checkLineNums(lineCount);
         outfile << lineCount << ": ST 4," << tempAddress << "(0)\n";
