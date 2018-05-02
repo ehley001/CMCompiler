@@ -222,6 +222,13 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
         }
     }
 
+    if (ruleNum == 200){
+        int tempCount;
+        cout<<lineCount<<"if\n";
+        tempCount = lineCount;
+        lineCount++;
+    }
+
 
     //recursively going through the tree
     for(int count = 0; count < child.size(); count++){
