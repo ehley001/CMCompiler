@@ -20,7 +20,9 @@ string countSpace = ""; // space holder
 int numSpace =0;       // space counter
 
 int address = 6;
-int ifCountCheck = 0;
+int ifCountCheck = 0, elseCountCheck = 0, secondCheck = 0;
+bool ifElseFlag = false;
+string jumpCode = "";
 vector<int> globalVec;
 
 vector<int> lineNums;
@@ -223,6 +225,7 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
         }
     }
 
+    //rule for basic if's
     if(ruleNum == 150){
         //if all thats in the if is a output statement, we just have to skip 2 lines
         if(child[1]->type == "output"){
@@ -236,13 +239,47 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
 
     }
 
-    if (ruleNum == 200){
-        int tempCount;
+    //rule for if..else's
+    //still needs work
+    if(ruleNum == 151){
+        ifElseFlag = true;
+        if(child[1]->type == "output") {
+            ifCountCheck = 2;
+            elseCountCheck = 3;
+            secondCheck = 6;
+        } //if here that means we have an assignment
+        else{
+            ifCountCheck = 6;
+            elseCountCheck = 5;
+            secondCheck = 8;
+        }
 
-        tempCount = lineCount;
+        if(child[2]->type == "output") {
+
+        }
+
+
+
+    }
+
+    if (ruleNum == 200){
+
+        jumpCode = "JLT";
+
         lineCount++;
 
         ifStatement(outfile, lineCount);
+
+        //checking to see if theres an else or not
+        if(ifElseFlag == true){
+            jumpCode = "JGT";
+            cout<<lineCount;
+            lineCount+=elseCountCheck;
+
+            ifStatement(outfile, lineCount);
+            lineCount-=secondCheck;
+            cout<<lineCount;
+        }
     }
 
 
@@ -314,7 +351,7 @@ void treenode::ifStatement(ofstream &outfile, int &lineCount){
 
         lineCount = checkLineNums(lineCount);
 
-        outfile << lineCount << ": JLT 4," << ifCountCheck <<"(7)\n";
+        outfile << lineCount << ": " << jumpCode <<" 4," << ifCountCheck <<"(7)\n";
         lineNums.push_back(lineCount);
         lineCount++;
 
@@ -345,7 +382,7 @@ void treenode::ifStatement(ofstream &outfile, int &lineCount){
 
             lineCount = checkLineNums(lineCount);
             cout<<" *1\n";
-            outfile << lineCount << ": JLT 4," << ifCountCheck <<"(7)\n";
+            outfile << lineCount << ": " << jumpCode <<" 4," << ifCountCheck <<"(7)\n";
             lineNums.push_back(lineCount);
             lineCount++;
         }
@@ -369,7 +406,7 @@ void treenode::ifStatement(ofstream &outfile, int &lineCount){
 
             lineCount = checkLineNums(lineCount);
             cout<<"2\n";
-            outfile << lineCount << ": JLT 4," << ifCountCheck <<"(7)\n";
+            outfile << lineCount << ": " << jumpCode <<" 4," << ifCountCheck <<"(7)\n";
             lineNums.push_back(lineCount);
             lineCount++;
         }
@@ -397,7 +434,7 @@ void treenode::ifStatement(ofstream &outfile, int &lineCount){
 
         lineCount = checkLineNums(lineCount);
         cout<<"3\n";
-        outfile << lineCount << ": JLT 4," << ifCountCheck <<"(7)\n";
+        outfile << lineCount << ": " << jumpCode <<" 4," << ifCountCheck <<"(7)\n";
         lineNums.push_back(lineCount);
         lineCount++;
     }
