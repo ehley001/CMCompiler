@@ -51,6 +51,8 @@ public:
 
     int maxCount = 0;
 
+    int ifCount;
+
     int getMax();
 
     string assignmentAddress = ""; //saves address location of a variable we are assigning to
