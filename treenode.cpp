@@ -1274,7 +1274,17 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
                 lineNums.push_back(lineCount);
                 lineCount++;
                 //if only the second child is a constant
-            } else if (first == true && second == false && two != "*" && two != "-" && two != "+" && two != "/"){
+
+            } else if(first == false && second == true && one != "-" && one != "+" && one != "/"){
+
+                lineCount = checkLineNums(lineCount);
+                outfile << lineCount << ": LDC 1," << child[i]->child[1]->type << "(5)\n";
+                lineNums.push_back(lineCount);
+                lineCount++;
+                //if only the second child is a constant
+            }
+
+            else if (first == true && second == false && two != "*" && two != "-" && two != "+" && two != "/"){
 
                 lineCount = checkLineNums(lineCount);
                 outfile << lineCount << ": LDC 1," << child[i]->child[1]->type << "(5)\n";
@@ -1311,26 +1321,27 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
                 lineCount++;
             }
             else if(isConstant == true && (one == "*" || one == "-" || one == "+" || one == "/" || two == "*" || two == "-" || two == "+" || two != "/")){
-                offset = 0;
+                offset = 3;
                 // these statements pop our stack
 
                 tmpLine = lineCount;
 
 
-                outfile << lineCount + offset + 1<< ": LDA 5,-1(5)\n";
+                outfile << lineCount + offset + 1<< ": LDC 1," << child[1]->child[1]->type<<"(5)\n";
                 lineNums.push_back(lineCount + offset + 1);
 
-                outfile << lineCount + offset + 2<< ": LD 1,0(5)\n";
+//
+//                outfile << lineCount + offset + 3<< ": LDA 5,-1(5)\n";
+//                lineNums.push_back(lineCount + offset + 3);
+//
+//                outfile << lineCount + offset + 4<< ": LD 2,0(5)\n";
+//                lineNums.push_back(lineCount + offset + 4);
+
+                outfile << lineCount + offset + 2<< ": DIV 4,4,1\n";
                 lineNums.push_back(lineCount + offset + 2);
 
-                outfile << lineCount + offset + 3<< ": LDA 5,-1(5)\n";
+                outfile << lineCount + offset + 3<< ": ST 4,7(0)\n";
                 lineNums.push_back(lineCount + offset + 3);
-
-                outfile << lineCount + offset + 4<< ": LD 2,0(5)\n";
-                lineNums.push_back(lineCount + offset + 4);
-
-                outfile << lineCount + offset + 5<< ": DIV 4,2,1\n";
-                lineNums.push_back(lineCount + offset + 5);
                 tempOffset = lineCount + 1;
 
 
