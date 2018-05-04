@@ -713,7 +713,7 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
 
                 outfile<<"* found the issue\n";
                 lineCount = checkLineNums(lineCount);
-                outfile << lineCount << ": ST 4,0(5)\n";3
+                outfile << lineCount << ": ST 4,0(5)\n";
                 lineNums.push_back(lineCount);
                 lineCount++;
 
@@ -851,7 +851,7 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
 //                cout << "two:" << twoCount;
 //            }
             //if they are both constants, and they are not an operation
-            if ((first == false && second == false) && one != "*" && one != "-" && one != "+" && one != "-" && two != "*" && two != "-" && two != "+" && two != "-"){
+            if ((first == false && second == false) && one != "*" && one != "-" && one != "+" && one != "-" && two != "*" && two != "-" && two != "+" && two != "/"){
 
                 lineCount = checkLineNums(lineCount);
                 outfile << lineCount << ": LDC 1," << child[i]->child[0]->type << "(5)\n";
@@ -905,7 +905,7 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
 
                 lineCount++;
             }
-            else if(isConstant == true && (one == "*" || one == "-" || one == "+" || one == "-" || two == "*" || two != "-" || two == "+" || two == "/")){
+            else if(isConstant == true && (one == "*" || one == "-" || one == "+" || one == "-" || two == "*" || two == "-" || two == "+" || two == "/")){
                 offset = 14;
                 // these statements pop our stack
 
@@ -924,7 +924,11 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
                 outfile << lineCount + offset + 4<< ": LD 2,0(5)\n";
                 lineNums.push_back(lineCount + offset + 4);
 
-                outfile << lineCount + offset + 5<< ": SUB 4,2,1\n";
+                if(first == true) {
+                    outfile << lineCount + offset + 5 << ": SUB 4,1,2\n";
+                }else{
+                    outfile << lineCount + offset + 5 << ": SUB 4,2,1\n";
+                }
                 lineNums.push_back(lineCount + offset + 5);
                 tempOffset = lineCount + 1;
 
@@ -1091,10 +1095,11 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
                 lineNums.push_back(lineCount);
                 lineCount++;
 
-            }else if (one != "*" && one != "-" && one != "+" && one != "-" && two != "*" && two != "-" && two != "+" && two != "/"){
+            }else if (one != "*" && one != "/" && one != "+" && one != "-" && two != "*" && two != "-" && two != "+" && two != "/"){
 
                 lineCount = checkLineNums(lineCount);
-                outfile << lineCount << ": MUL 4,4,2\n";
+                outfile<<"*culprit\n";
+                outfile << lineCount << ": MUL 4,4,1\n";
                 lineNums.push_back(lineCount);
 
                 lineCount++;
@@ -1188,14 +1193,14 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
                     lineCount = checkLineNums(lineCount);
                     outfile << lineCount << ": LD 4," << it->second->address << "(0)\n";
                     lineNums.push_back(lineCount);
-                    lineCount = checkLineNums(lineCount);
-                    //lineCount++;
+                   // lineCount = checkLineNums(lineCount);
+                   // lineCount++;
                     string address = it->second->address;
                     first = true;
 
                 }
                 else if (it->second->name == child[i]->child[1]->type) {
-
+                    outfile<<"*/found the div11\n";
                     lineCount = checkLineNums(lineCount);
                     outfile << lineCount << ": LD 2," << it->second->address << "(0)\n";
                     lineNums.push_back(lineCount);
@@ -1269,15 +1274,16 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
                 lineCount++;
 
             }else if (one != "*" && one != "-" && one != "+" && one != "/" && two != "*" && two != "-" && two != "+" && two != "/"){
-
+                outfile<<"*/found the div\n";
                 lineCount = checkLineNums(lineCount);
+
                 outfile << lineCount << ": DIV 4,4,2\n";
                 lineNums.push_back(lineCount);
 
                 lineCount++;
             }
             else if(isConstant == true && (one == "*" || one == "-" || one == "+" || one == "/" || two == "*" || two == "-" || two == "+" || two != "/")){
-                offset = 14;
+                offset = 6;
                 // these statements pop our stack
 
                 tmpLine = lineCount;
@@ -1286,8 +1292,8 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
                 outfile << lineCount + offset + 1<< ": LDA 5,-1(5)\n";
                 lineNums.push_back(lineCount + offset + 1);
 
-                outfile << lineCount + offset + 2<< ": LD 1,0(5)\n";
-                lineNums.push_back(lineCount + offset + 2);
+//                outfile << lineCount + offset + 2<< ": LD 1,0(5)\n";
+//                lineNums.push_back(lineCount + offset + 2);
 
                 outfile << lineCount + offset + 3<< ": LDA 5,-1(5)\n";
                 lineNums.push_back(lineCount + offset + 3);
