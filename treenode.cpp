@@ -315,6 +315,7 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
     //rule for if..else's
     //still needs work
     if(ruleNum == 151){
+        outfile<<"* beginning of if else statement\n";
         ifElseFlag = true;
         if(child[1]->type == "output") {
             ifCountCheck = 2;
@@ -337,7 +338,23 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
 
     if (ruleNum == 200){
 
-        jumpCode = "JLT";
+        bool check1 = false, check2 = false, check3 = false, check4 = false;
+        //checking what the opcode should be
+        if(child[0]->type == ">") {
+            jumpCode = "JLT";
+            check1 = true;
+        } else if(child[0]->type == "<"){
+            jumpCode = "JGT";
+            check2 = true;
+        } else if(child[0]->type == ">="){
+            jumpCode = "JLE";
+            check3 = true;
+        } else if (child[0]->type == "<="){
+            jumpCode = "JGE";
+            check4 = true;
+        }  else{
+            jumpCode = "JEQ";
+        }
 
         lineCount++;
 
@@ -345,7 +362,17 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
 
         //checking to see if theres an else or not
         if(ifElseFlag == true){
-            jumpCode = "JGT";
+            if(check1 == true){
+                jumpCode = "JGT";
+            } else if (check2 == true){
+                jumpCode = "JLT";
+            }
+            else if (check3 == true){
+                jumpCode = "JGE";
+            }else if (check4 == true){
+                jumpCode = "JLE";
+            }
+
             cout<<lineCount;
             lineCount+=elseCountCheck;
 
@@ -711,7 +738,6 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
                 lineNums.push_back(lineCount);
                 lineCount++;
 
-                outfile<<"* found the issue\n";
                 lineCount = checkLineNums(lineCount);
                 outfile << lineCount << ": ST 4,0(5)\n";
                 lineNums.push_back(lineCount);
