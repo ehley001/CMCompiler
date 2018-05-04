@@ -254,8 +254,27 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
                     }
 //cout<<"&:"<<ifCountCheck;
                     if(path == "+" ||path == "-" ||path == "*" || path =="/"){
-                        cout<<"path2"<<path<<endl;
-                        ifCountCheck+=4;
+                        bool check1 = false;
+                        bool check2 = false;
+                        string var1 = child[1]->child[1]->child[index]->child[1]->child[0]->type;
+                        string var2 = child[1]->child[1]->child[index]->child[1]->child[1]->type;
+
+                        if(find(variableNames.begin(), variableNames.end(), var1) != variableNames.end()){
+                          //  ifCountCheck += 1; // if its a variable that will only add one line of code
+                            check1 = true;
+                        }
+
+                        if(find(variableNames.begin(), variableNames.end(), var2) != variableNames.end()){
+                           // ifCountCheck += 1; // if its a variable that will only add one line of code
+                            check2 = true;
+                        }
+
+                        if(check1 == true && check2 == true){
+                            ifCountCheck+=2;
+                        } else{
+                            ifCountCheck+=5;
+                        }
+                        ifCountCheck+=2; //this for the actual add command and store
                     }
                 path = "";
 
@@ -558,6 +577,7 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
 
     for(int i = 0; i < child.size(); i++){
 
+        //PLUS rules
         if(child[i]->type == "+"){
 
             string address = "";
@@ -590,7 +610,8 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
                 else if (it->second->name == child[i]->child[0]->type) {
 
                     lineCount = checkLineNums(lineCount);
-                    outfile << lineCount << ": LD 2," << it->second->address << "(0)\n";
+                    outfile<<"*case1\n";
+                    outfile << lineCount << ": LD 4," << it->second->address << "(0)\n";
                     lineNums.push_back(lineCount);
                     lineCount++;
                     string address = it->second->address;
@@ -600,6 +621,7 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
                  else if (it->second->name == child[i]->child[1]->type) {
 
                     lineCount = checkLineNums(lineCount);
+                    outfile<<"*case2\n";
                     outfile << lineCount << ": LD 2," << it->second->address << "(0)\n";
                     lineNums.push_back(lineCount);
                     lineCount++;
@@ -685,12 +707,13 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
             if(isConstant == true && one != "*" && one != "-" && one != "+" && one != "-" && two != "*" && two != "-" && two != "+" && two != "-") {
 
                 lineCount = checkLineNums(lineCount);
-                outfile << lineCount << ": ADD 4,2,1\n";
+                outfile << lineCount << ": ADD 4,4,1\n";
                 lineNums.push_back(lineCount);
                 lineCount++;
 
+                outfile<<"* found the issue\n";
                 lineCount = checkLineNums(lineCount);
-                outfile << lineCount << ": ST 4,0(5)\n";
+                outfile << lineCount << ": ST 4,0(5)\n";3
                 lineNums.push_back(lineCount);
                 lineCount++;
 
