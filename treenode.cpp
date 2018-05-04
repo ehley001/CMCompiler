@@ -594,7 +594,7 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
 
     for(int i = 0; i < child.size(); i++){
 
-        //PLUS rules
+        // Generates code for math operations dealing with addition
         if(child[i]->type == "+"){
 
             string address = "";
@@ -789,6 +789,7 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
 
         }
 
+        // Generates code for math operations dealing with subtraction
         if(child[i]->type == "-"){
             // address of left side, can do checks if this is empty string, then you know its a constant or another mathop
 
@@ -976,7 +977,7 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
         }
 
 
-        // multiplication
+        // Generates code for math operations dealing with multiplication
         if(child[i]->type == "*"){
             // address of left side, can do checks if this is empty string, then you know its a constant or another mathop
 
@@ -1170,7 +1171,7 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
         }
 
 
-        // DIVISION rule
+        // Generates code for math operations dealing with division
         if(child[i]->type == "/"){
             // address of left side, can do checks if this is empty string, then you know its a constant or another mathop
 
@@ -1364,6 +1365,7 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
     getMax();
 }
 
+// checker for line numbers and offsets
 int treenode::checkLineNums(int line) {
 
     bool checker = false;
@@ -1381,18 +1383,17 @@ int treenode::checkLineNums(int line) {
 }
 
 
+// gets max count for offsets
 int treenode::getMax() {
 
     if(maxCount <= tempOffset) {
         maxCount = tempOffset;
     }
 
-
-
 }
 
 
-//resets the address once it gets to the max register
+//increments address when called
 void treenode::checkAddress() {
 //    if(address == 15){
 //        address = -1;
