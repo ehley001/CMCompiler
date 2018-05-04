@@ -20,10 +20,11 @@ string countSpace = ""; // space holder
 int numSpace =0;       // space counter
 
 int address = 6;
-int ifCountCheck = 0, elseCountCheck = 0, secondCheck = 0;
+int ifCountCheck = 0, elseCountCheck = 0, secondCheck = 0, whileCount = 0;
 bool ifElseFlag = false;
 string jumpCode = "";
 vector<int> globalVec;
+vector<string> variableNames;
 
 vector<int> lineNums;
 cGen generator;
@@ -115,6 +116,7 @@ void treenode::buildMapVec(string scope) {
             globalVec.push_back(address);
         }
 
+        variableNames.push_back(child[1]->type);
         var.build(new SymTab(child[1]->type,child[0]->text,"1", scope, to_string(address))) ;
         checkAddress();
 
@@ -225,8 +227,60 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
         }
     }
 
+
+    if(ruleNum == 160){
+
+        ifCountCheck = 1; // sets it to one since it should jump at least 1
+
+        whileCount = lineCount;
+        outfile << lineCount << ": LDC 1,"<< whileCount + 2 <<"(0)\n";
+        lineCount++;
+        outfile << lineCount << ": ST 1,"<< whileCount + 2 <<"(0)\n";
+        lineCount++;
+
+        outfile<<"* beginning of while loop\n";
+
+
+        for(int index = 0; index <51;index++){
+
+            try {
+                child[1]->child[1]->child.at(index);
+
+                    string path = child[1]->child[1]->child[index]->child[1]->type;
+
+                    if(path == "input"){
+                        cout<<"path1"<<path<<endl;
+                        ifCountCheck +=2;
+                    }
+//cout<<"&:"<<ifCountCheck;
+                    if(path == "+" ||path == "-" ||path == "*" || path =="/"){
+                        cout<<"path2"<<path<<endl;
+                        ifCountCheck+=4;
+                    }
+                path = "";
+
+            }catch (out_of_range& oor){
+
+            }
+
+
+
+        }
+
+        int modLine = ifCountCheck+lineCount+4-1;
+
+        outfile << modLine << ": LD 7,"<< whileCount + 2 <<"(0)\n";
+        lineNums.push_back(modLine);
+
+    }
+
+
+
+
+
     //rule for basic if's
     if(ruleNum == 150){
+        outfile<<"* beginning of if statement\n";
         //if all thats in the if is a output statement, we just have to skip 2 lines
         if(child[1]->type == "output"){
             ifCountCheck = 2;
