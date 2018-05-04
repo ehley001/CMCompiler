@@ -1,6 +1,7 @@
-//
-// Created by David Ehley on 2/1/18.
-//
+// Created by David Ehley, Jesse Karakash, Aaron Diaz, Abel Rodarte on 2/1/18.
+// Current Compiler for Stage 1 and Stage 2
+// Assignment 5
+// 5-4-2018
 
 #include <iostream>
 #include <algorithm>
@@ -11,7 +12,6 @@
 #include "FunctionTable.h"
 #include "Variable.h"
 #include "ParameterList.h"
-#include "cGen.h"
 
 
 using namespace std;
@@ -27,7 +27,6 @@ vector<int> globalVec;
 vector<string> variableNames;
 
 vector<int> lineNums;
-cGen generator;
 
 
 FunctionTable func;
@@ -178,8 +177,6 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
     // handles output -> arglist -> x and output -> arglist -> x, y
     // does not handle mathops
     if(ruleNum == 262 && type == "output" && child[0]->child[0]->child.size() == 0){
-       // cout << child[0]->child.size();
-
 
         for(int i = 0; i < child[0]->child.size(); i++){
 
@@ -204,7 +201,6 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
     // same as above statement, exept checking for mathops
 
     if(ruleNum == 262 && type == "output" && child[0]->child[0]->child.size() == 2){
-         cout << "in the out";
 
 
         child[0]->assignOut(outfile,lineCount);
@@ -251,10 +247,8 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
                     string path = child[1]->child[1]->child[index]->child[1]->type;
 
                     if(path == "input"){
-                        cout<<"path1"<<path<<endl;
                         ifCountCheck +=2;
                     }
-//cout<<"&:"<<ifCountCheck;
                     if(path == "+" ||path == "-" ||path == "*" || path =="/"){
                         bool check1 = false;
                         bool check2 = false;
@@ -306,7 +300,6 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
         if(child[1]->type == "output"){
             ifCountCheck = 2;
 
-            cout<<child[1]->type<<"iftest"<<"\n";
             //if its a simple math expr, it will have to jump ahead 6 lines
         }else{
             ifCountCheck = 6;
@@ -375,12 +368,10 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
                 jumpCode = "JLE";
             }
 
-            cout<<lineCount;
             lineCount+=elseCountCheck;
 
             ifStatement(outfile, lineCount);
             lineCount-=secondCheck;
-            cout<<lineCount;
         }
     }
 
@@ -483,7 +474,6 @@ void treenode::ifStatement(ofstream &outfile, int &lineCount){
             lineCount++;
 
             lineCount = checkLineNums(lineCount);
-            cout<<" *1\n";
             outfile << lineCount << ": " << jumpCode <<" 4," << ifCountCheck <<"(7)\n";
             lineNums.push_back(lineCount);
             lineCount++;
@@ -507,7 +497,6 @@ void treenode::ifStatement(ofstream &outfile, int &lineCount){
             lineCount++;
 
             lineCount = checkLineNums(lineCount);
-            cout<<"2\n";
             outfile << lineCount << ": " << jumpCode <<" 4," << ifCountCheck <<"(7)\n";
             lineNums.push_back(lineCount);
             lineCount++;
@@ -535,7 +524,6 @@ void treenode::ifStatement(ofstream &outfile, int &lineCount){
         lineCount++;
 
         lineCount = checkLineNums(lineCount);
-        cout<<"3\n";
         outfile << lineCount << ": " << jumpCode <<" 4," << ifCountCheck <<"(7)\n";
         lineNums.push_back(lineCount);
         lineCount++;
@@ -869,15 +857,6 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
             string two = child[i]->child[1]->type;
 
 
-//            if (one == "*" || one == "/" ||  one == "+" || one == "-" ){
-//                oneCount = lineCount;
-//                cout << "one:" << lineCount;
-//            }
-//
-//            if( two == "*" || two == "/" ||  two == "+" || two == "-"){
-//                twoCount++;
-//                cout << "two:" << twoCount;
-//            }
             //if they are both constants, and they are not an operation
             if ((first == false && second == false) && one != "*" && one != "-" && one != "+" && one != "-" && two != "*" && two != "-" && two != "+" && two != "/"){
 
@@ -1388,7 +1367,6 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
 int treenode::checkLineNums(int line) {
 
     bool checker = false;
- //   cout<<"passed in:" << line <<endl;
     while(find(lineNums.begin(), lineNums.end(), line) != lineNums.end()){
         line++;
         checker = true;

@@ -19,4 +19,4 @@ ADD_CUSTOM_COMMAND(
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_executable(CMCompiler main.cpp treenode.h treenode.cpp parser.cpp parser.hpp scanner.cpp common.h FunctionTable.cpp ParameterList.cpp ParameterList.h FunctionTable.h SymTab.cpp SymTab.h Variable.cpp Variable.h cGen.cpp cGen.h)
+add_executable(CMCompiler main.cpp treenode.h treenode.cpp parser.cpp parser.hpp scanner.cpp common.h FunctionTable.cpp ParameterList.cpp ParameterList.h FunctionTable.h SymTab.cpp SymTab.h Variable.cpp Variable.h)

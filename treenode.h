@@ -1,6 +1,7 @@
-//
-// Created by David Ehley on 2/1/18.
-//
+// Created by David Ehley, Jesse Karakash, Aaron Diaz, Abel Rodarte on 2/1/18.
+// Current Compiler for Stage 1 and Stage 2
+// Assignment 5
+// 5-4-2018
 
 #ifndef NARY_treenode_H
 #define NARY_treenode_H
