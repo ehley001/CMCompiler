@@ -165,6 +165,8 @@ void treenode::codeGeneration(ofstream &outfile, int &lineCount) {
 
     }
 
+
+
     // finds mathops to do stuff
     if(ruleNum == 180 && (//child[0]->type == "+" || child[0]->type == "-" || child[0]->type == "*" || child[0]->type == "/" ||
                            child[1]->type == "+" || child[1]->type == "-" || child[1]->type == "*" || child[1]->type == "/")){
@@ -1125,7 +1127,7 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
 
                 lineCount = checkLineNums(lineCount);
                 outfile<<"*culprit\n";
-                outfile << lineCount << ": MUL 4,4,1\n";
+                outfile << lineCount << ": MUL 4,4,2\n";
                 lineNums.push_back(lineCount);
 
                 lineCount++;
@@ -1309,7 +1311,7 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
                 lineCount++;
             }
             else if(isConstant == true && (one == "*" || one == "-" || one == "+" || one == "/" || two == "*" || two == "-" || two == "+" || two != "/")){
-                offset = 6;
+                offset = 0;
                 // these statements pop our stack
 
                 tmpLine = lineCount;
@@ -1318,8 +1320,8 @@ void treenode::mathOps(ofstream &outfile, int &lineCount) {
                 outfile << lineCount + offset + 1<< ": LDA 5,-1(5)\n";
                 lineNums.push_back(lineCount + offset + 1);
 
-//                outfile << lineCount + offset + 2<< ": LD 1,0(5)\n";
-//                lineNums.push_back(lineCount + offset + 2);
+                outfile << lineCount + offset + 2<< ": LD 1,0(5)\n";
+                lineNums.push_back(lineCount + offset + 2);
 
                 outfile << lineCount + offset + 3<< ": LDA 5,-1(5)\n";
                 lineNums.push_back(lineCount + offset + 3);
